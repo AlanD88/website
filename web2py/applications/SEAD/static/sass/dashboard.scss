@@ -1,11 +1,13 @@
-$orange: #EA5019;
+$orange: #f39331;
 $orange1: #FF472E;
-$gray: #F2F6FC;
-$gray1: #9abcf4;
+$gray: #FAFAFA;
+$gray1: #BCBEC0;
+$gray2: #E6E7E8;
 $blue: #459DFF;
 $blue1: #2D5CB0;
 $border-test: 1px black dashed;
 $module-border: 0.5px #A1A8B2 solid;
+
 body {
     over-flow-x: hidden;
     margin: 0px;
@@ -14,26 +16,63 @@ body {
     font-weight: 300;
     // font-family: "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, AppleGothic, sans-serif;
     font-size: 15px;
-    font-family: 'Josefin Sans', sans-serif;
+    //font-family: 'Josefin Sans', sans-serif;
+    font-family: 'Roboto Condensed', sans-serif;
+
+}
+
+#deco-bar {
+    width: 100%;
+    //height: 10px;
+    //border: $border-test;
+    margin-bottom: 5px;
+    .bar{
+        display: inline-block;
+        height: 5px;
+        //top: 5px;
+    }
+    .b1{
+        background-color: $orange;
+        width: 43%;
+    }
+    .b2{
+        background-color: #fbcc33;
+        width: 33%;
+        margin-left: 0.5%;
+        margin-right: 0.5%;
+
+    }
+    .b3{
+        background-color: #68da65;
+        width: 19%;
+    }
 }
 
 #space-for-search-bar {
-    margin-top: 50px; //for search-bar
-    padding: 10px;
-    wdith: 300px;
+    margin-top: 80px; //for search-bar
     //margin: 5px;
+}
+
+#function-bar{
+    //border: $border-test;
+    z-index: 999;
+    position: fixed;
+    //width: 100%;
+    height: 30px;
+    top: 50px;
 }
 
 .manage-bar {
     // border: $border-test;
     position: fixed;
-    z-index: 1000px;
+    z-index: 1000;
     top: 0px;
     bottom: 0px;
     left: 0px;
     width: 230px;
     text-align: center;
     padding: 10px;
+    overflow-y: scroll;
     .logo {
         // border: $border-test;
         margin-top: 40px;
@@ -57,6 +96,12 @@ body {
             -webkit-transition: font-size 0.5s;
             /* Safari */
             transition: font-size 0.5s;
+        }
+        .room-label-flash{
+            position: relative;
+            top: -20px;
+            left: -20px;
+            color: $gray1;
         }
     }
     .room-icon:hover {
@@ -91,19 +136,22 @@ body {
             // border: $border-test;
         }
         .active {
-            box-shadow: 0 0 8px $orange1;
+            //box-shadow: 0 0 8px $orange1;
             // border: 1px solid $orange1;
+            color: white;
+            font-weight: bold;
             background-color: $orange;
             padding-left: 50px;
         }
         .add-room {
             margin-top: 5px;
             .icon {
-                color: $blue;
-                font-size: 20px;
+                margin: 5px;
+                color: $gray1;
+                font-size: 25px;
             }
             .icon:hover {
-                color: $blue1;
+                color: $gray2;
             }
         }
         .badge {
@@ -192,7 +240,7 @@ body {
     .mo {
         // border: $border-test;
         display: inline-block;
-        margin-top: 20px;
+        margin-bottom: 20px;
         margin-right: 20px;
         .mo-el {
             // border: $border-test;
@@ -214,18 +262,35 @@ body {
     .module1 {
         margin-right: 20px;
         width: 100%;
-        height: 380px;
+        //height: 500px;
         padding-right: 40px;
     }
     .module2 {
         width: 64%;
-        height: 300px;
+        //height: 300px;
     }
     .module3 {
         width: 31%;
-        height: 300px;
+        //height: 300px;
     }
 }
+
+.notification {
+    //background-color: white;
+    //border: $border-test;
+    height: 400px;
+    overflow-y: scroll;
+    .media {
+        background-color: white;
+        padding: 20px;
+        margin: 0px;
+        margin-bottom: 10px;
+        height: 90px;
+        //border: $border-test;
+        border-radius: 10px;
+    }
+}
+
 
 //overwrite the entire bootstrap modal for add-room-modal
 .add-room-modal {
@@ -271,7 +336,7 @@ body {
                         }
                         .panel-collapse {
                             .panel-body {
-                                // height: 100px;
+                                 //height: 100px;
                                 .panel-icon {
                                     margin: 8px;
                                     width: 50px;
@@ -292,6 +357,26 @@ body {
             }
         }
     }
+}
+
+#flash-message {
+    //border: $border-test;
+    //display: block;
+    position: fixed;
+    z-index: 1001;
+    top: 50px;
+    right: 40%;
+}
+
+.flash-show{
+    //border: $border-test;
+    //padding: 5px;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 25px;
+    padding: 10px;
+    border-radius: 5px;
+    color: white;
+    background-color: rgba(200,200,200,0.4);
 }
 
 @media only screen and (max-width: 1025px) {
@@ -316,7 +401,8 @@ body {
 @media only screen and (max-width: 768px) {
     /* For tablets:ipad */
     #space-for-search-bar {
-        margin-top: 50px; //for search-bar
+        //margin-bottom: 28px;
+        //margin-top: 40px; //for search-bar
     }
     #manage-bar {
         display: none;

@@ -17,6 +17,66 @@ var app = function() {
 
 
     //---------------HELPER-----------------
+
+    //FLASH MESSAGE
+    (function($) {
+        $.fn.flash_message = function(options) {
+            options = $.extend({
+                text: 'Done',
+                time: 1000,
+                how : 'before',
+                class_name: 'flash-show'
+            }, options);
+
+            return $(this).each(function() {
+                if( $(this).parent().find('.flash_message').get(0) )
+                return;
+
+                var message = $('<span />', {
+                    'class': 'flash_message ' + options.class_name,
+                    text: options.text
+                }).hide().fadeIn('fast');
+                    $(this)[options.how](message);
+
+                message.delay(options.time).fadeOut('slow', function() {
+                    $(this).remove();
+                });
+            });
+        };
+    })(jQuery);
+
+
+    // Multiple AJAX Callbacks
+    var MyRequestsCompleted = (function() {
+    var numRequestToComplete, requestsCompleted, callBacks, singleCallBack;
+
+    return function(options) {
+        if (!options) options = {};
+
+        numRequestToComplete = options.numRequest || 0;
+        requestsCompleted = options.requestsCompleted || 0;
+        callBacks = [];
+        var fireCallbacks = function() {
+            // alert("we're all complete");
+            for (var i = 0; i < callBacks.length; i++) callBacks[i]();
+        };
+        if (options.singleCallback) callBacks.push(options.singleCallback);
+
+        this.addCallbackToQueue = function(isComplete, callback) {
+            if (isComplete) requestsCompleted++;
+            if (callback) callBacks.push(callback);
+            if (requestsCompleted == numRequestToComplete) fireCallbacks();
+        };
+        this.requestComplete = function(isComplete) {
+            if (isComplete) requestsCompleted++;
+            if (requestsCompleted == numRequestToComplete) fireCallbacks();
+        };
+        this.setCallback = function(callback) {
+            callBacks.push(callBack);
+        };
+    };
+})();
+
     var is_mod = function() {
         console.log('works');
     };
@@ -71,6 +131,9 @@ var app = function() {
         el.remove();
     };
 
+    String.prototype.capitalize = function() {
+        return this.charAt(0).toUpperCase() + this.slice(1);
+    }
     //-----------------init-----------------
     var modal_event_init = function() {
         console.log('modal event inited');
@@ -95,17 +158,117 @@ var app = function() {
         });
     };
 
+    self.get_all_data_reload_room = function (room_i) { //room to be reload
+        var rooms = self.vue.room_structure.rooms;
+        var callback_chart = function () {
+                console.log('callback_chart()');
+                for (i = 0; i < self.vue.rooms[room_i].modules.length; i++) {
+                    self.create_chart(0, i);
+                }
+            };
+
+            //init empty graph
+            for (i = 0; i < self.vue.rooms[0].modules.length; i++) {
+                    self.create_chart(0, i);
+            }
+
+            var num_of_dev = 0;
+            // var num_of_call = 0;
+            // console.log("1. "+rooms);
+            // console.log("2 ."+rooms.length);
+            for (var i = 1; i < rooms.length; i++) {
+                var device = rooms[i].device.split(",");
+                for (var j = 0; j < device.length; j++) {
+                    num_of_dev++;
+                }
+            }
+            // console.log('num_of_dev: '+num_of_dev);
+            var requestCallback = new MyRequestsCompleted({
+                numRequest: num_of_dev,
+                singleCallback: function(){
+                    // alert('done');
+                    $.when(callback_chart()).done(function() {
+                        self.vue.isInitialized = true;
+                        self.reload_room(room_i);
+                        });
+                    // self.vue.isInitialized = true;
+                }
+            });
+
+            //get all data
+            // setTimeout(function() {
+            //     self.vue.rooms[room_i].data = [];
+            // }, 2);
+            // self.vue.rooms[room_i].data = [];
+            for (var i = 1; i < rooms.length; i++) {
+                if (self.vue.isInitialized) {
+                    self.vue.rooms[i].data = [];
+                }
+                var device = rooms[i].device.split(",");
+                for (var j = 0; j < device.length; j++) {
+                    if(device[j]) {
+                        self.get_data(rooms[i].room.toLowerCase(), device[j], self.vue.start_date, self.vue.end_date, i, requestCallback);
+                        // num_of_call++;
+                    }
+                }
+            }
+            // console.log('num_of_call: '+num_of_call);
+    };
+
     var initHome = function() {
-        for (i = 0; i < self.vue.rooms[0].modules.length; i++) {
-            self.create_chart(0, i);
-        }
-
-    }
-
-    var initRooms = function() {
         var callback = function()
         {
             var rooms = self.vue.room_structure.rooms;
+            $('#room-label-flash').flash_message({
+                text: 'Click Here to Edit',
+                how: 'append',
+            });
+            //
+            // var callback_chart = function () {
+            //     console.log('callback_chart()');
+            //     for (i = 0; i < self.vue.rooms[0].modules.length; i++) {
+            //         self.create_chart(0, i);
+            //     }
+            // };
+            //
+            // //init empty graph
+            // for (i = 0; i < self.vue.rooms[0].modules.length; i++) {
+            //         self.create_chart(0, i);
+            // }
+            //
+            // var num_of_dev = 0;
+            // console.log("1. "+rooms);
+            // console.log("2 ."+rooms.length);
+            // // var num_of_call = 0;
+            // for (var i = 1; i < rooms.length; i++) {
+            //     var device = rooms[i].device.split(",");
+            //     for (var j = 0; j < device.length; j++) {
+            //         num_of_dev++;
+            //     }
+            // }
+            // // console.log('num_of_dev: '+num_of_dev);
+            // var requestCallback = new MyRequestsCompleted({
+            //     numRequest: num_of_dev,
+            //     singleCallback: function(){
+            //         // alert('done');
+            //         callback_chart();
+            //     }
+            // });
+            //
+            // //get all data
+            // for (var i = 1; i < rooms.length; i++) {
+            //     var device = rooms[i].device.split(",");
+            //     for (var j = 0; j < device.length; j++) {
+            //         if(device[j]) {
+            //             self.get_data(rooms[i].room.toLowerCase(), device[j], self.vue.start_date, self.vue.end_date, i, requestCallback);
+            //             // num_of_call++;
+            //         }
+            //     }
+            // }
+            // // console.log('num_of_call: '+num_of_call);
+
+            self.get_all_data_reload_room(0);
+
             // console.log(rooms);
             for(var i = 1; i < rooms.length; i++){
                 // console.log("icon_path: " + rooms[i].icon_path);
@@ -115,15 +278,38 @@ var app = function() {
                 self.add_room();
                 self.modal_reinit();
             }
+
             console.log('Room Inited');
             enumerate(self.vue.rooms);
             self.modal_reinit();
             self.manage_btn_toggle(0);
-            self.vue.isInitialized = true;
+            // self.vue.isInitialized = true;
         };
-        self.get_room(callback);
-        // self.reload_house();
-    }
+        self.get_room_cost(callback);
+    };
+
+    // var initRooms = function() {
+    //     var callback = function()
+    //     {
+    //         var rooms = self.vue.room_structure.rooms;
+    //         // console.log(rooms);
+    //         for(var i = 1; i < rooms.length; i++){
+    //             // console.log("icon_path: " + rooms[i].icon_path);
+    //             // console.log("room: " + rooms[i].room)
+    //             self.vue.modal_chosen_icon_path = img_path + rooms[i].icon_path;
+    //             self.vue.modal_room_name = rooms[i].room;
+    //             self.add_room();
+    //             self.modal_reinit();
+    //         }
+    //         console.log('Room Inited');
+    //         enumerate(self.vue.rooms);
+    //         self.modal_reinit();
+    //         self.manage_btn_toggle(0);
+    //         self.vue.isInitialized = true;
+    //     };
+    //     self.get_room(callback);
+    //     // self.reload_house();
+    // }
 
     var date_picker = function () {
         $(function() {
@@ -134,6 +320,9 @@ var app = function() {
                 $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
                 self.vue.start_date = start.format('YYYY,M,D');
                 self.vue.end_date = end.format('YYYY,M,D');
+                if (self.vue.isInitialized) {
+                    self.get_all_data_reload_room(self.vue.action_room);
+                }
             }
 
             $('#reportrange').daterangepicker({
@@ -155,17 +344,30 @@ var app = function() {
     }
 
     //---------------API calls-----------------
-    self.get_room = function (callback) {
-        $.getJSON(get_room_url + "?" + $.param({user_id: self.vue.user_id}),
+    self.get_room_cost = function (callback) {
+        $.getJSON(get_room_cost_url + "?" + $.param({user_id: self.vue.user_id}),
             function (info) {
                 console.log('get room success');
                 // console.log(info);
                 self.vue.room_structure = info;
+                self.vue.device_cost = info.device_cost;
                 // success: callback;
                 success: callback();
             }
         );
-    }
+    };
+
+    // self.get_cost_per_h = function (callback) {
+    //     $.getJSON(get_cost_per_h_url + "?" + $.param({user_id: self.vue.user_id}),
+    //         function (data) {
+    //             console.log('get_cost_per_h success');
+    //             // console.log(info);
+    //             self.vue.device_cost = data.device_cost;
+    //             // success: callback;
+    //             // success: callback();
+    //         }
+    //     );
+    // };
 
     function get_data_url_param(room, device, start, end) {
         var param = {
@@ -179,14 +381,22 @@ var app = function() {
         return get_data_url + "?" + $.param(param);
     }
 
-    self.get_data = function (room, device, start, end, room_i) {
+    self.get_data = function (room, device, start, end, room_i, reqCall) {
         $.getJSON(get_data_url_param(room, device, start, end),
             function (info) {
-                console.log('get data success');
+                // console.log('get data success');
                 // console.log(info);
-                self.vue.rooms[room_i].data[0] = info;
-                tmp_data = info;
-                self.reload_mod(0,0);
+                self.vue.rooms[room_i].data.push(info);
+                // if(self.vue.isInitialized) {
+                //     self.reload_room(room_i);
+                // }
+
+                success: (function() {
+                    reqCall.requestComplete(true);
+                })();
+
+                // self.reload_room(room_i);
+                // success: callback();
             }
         );
     };
@@ -194,19 +404,19 @@ var app = function() {
     //--------------------------------------
 
 
-    self.test = function(i){
+    self.test = function(){
         // $.getJSON(test_url,
         //     function (data) {
         //         console.log('test success');
         //         tmp_data = data.user;
         //     }
         // );
-        self.get_data("bedroom", "tv", self.vue.start_date, self.vue.end_date, 0);
+        // self.get_data("bedroom", "tv", self.vue.start_date, self.vue.end_date, 0);
         // console.log(tmp);
         // self.vue.rooms[0].data[0] = tmp_data;
         // console.log(self.vue.rooms[0].data[0]);
         // self.reload_house();
-        // self.reload_room(self.vue.action_room)
+        self.reload_room(self.vue.action_room);
             // self.vue.rooms[i].data[0] = scatterdataset; //test
             // scatter(self.vue.rooms[i], 0, 0);
             // scatter(self.vue.rooms[i], 1, 0);
@@ -245,6 +455,19 @@ var app = function() {
 
     self.edit_room = function() {
         // console.log('edit_room');
+
+        //check if room exist
+        for (var i = 0; i < self.vue.rooms.length; i++){
+            if(i==self.vue.action_room){continue;}
+            if (self.vue.rooms[i].name.toLowerCase() == self.vue.modal_room_name.toLowerCase()){
+                $('#flash-message').flash_message({
+                    text: 'Room Alreday Exist',
+                    how: 'append',
+                });
+                // $("html, body").animate({ scrollTop: 0}, 200);
+                return;
+            }
+        }
         var room = self.vue.rooms[self.vue.action_room]
         room.name = self.vue.modal_room_name;
         room.icon_path = self.vue.modal_chosen_icon_path;
@@ -255,8 +478,21 @@ var app = function() {
     }
 
     self.add_room = function() {
-        var name = (self.vue.modal_room_name ? self.vue.modal_room_name : default_room_name(self.vue.modal_chosen_icon_path));
+        //check if room exist
+        var name = (self.vue.modal_room_name ? self.vue.modal_room_name : default_room_name(self.vue.modal_chosen_icon_path)).toLowerCase().capitalize();
+        for (var i = 0; i < self.vue.rooms.length; i++){
+            if (self.vue.rooms[i].name.toLowerCase() == name.toLowerCase()){
+                $('#flash-message').flash_message({
+                    text: 'Room Alreday Exist',
+                    how: 'append',
+                });
+                // $("html, body").animate({ scrollTop: 0}, 200);
+                return;
+            }
+        }
+        // var name = (self.vue.modal_room_name ? self.vue.modal_room_name : default_room_name(self.vue.modal_chosen_icon_path)).toLowerCase().capitalize();
         var id_name = name.replace(/ /g, "_") + "_"; // edit to id format
+        var icon_path = self.vue.modal_chosen_icon_path;
         var new_room = {
             'name': name,
             '_idx': self.vue.rooms.length,
@@ -264,42 +500,49 @@ var app = function() {
             'data': [],
             'modules': [],
             'isActive': false,
-            'icon_path': self.vue.modal_chosen_icon_path,
+            'icon_path': icon_path,
         };
-
         var add_room_action = function () {
             // console.log('add_room');
             self.vue.rooms.push(new_room);
             console.log('add ' + name);
             self.vue.action_room = self.vue.rooms.length - 1;
-            self.add_module(1, 'activity'); // number refers to module type
-            self.add_module(3, 'devices');
-            self.add_module(2, 'graph');
-            self.add_module(3, 'consumption');
-            self.add_module(2, 'notification');
-            if (self.vue.isInitialized) {
-                self.manage_btn_toggle(self.vue.rooms.length - 1); //set this to active (jump to this page)
+            if(self.vue.isInitialized) {
+                // self.add_module( 'activity'); // number refers to module type
+                // // self.add_module( 'devices');
+                // self.add_module( 'graph');
+                // self.add_module( 'consumption');
+                // self.add_module( 'notification');
+                self.manage_btn_toggle(self.vue.rooms.length - 1);
+            } else {
+                var modules = self.vue.room_structure.rooms[self.vue.action_room].mod_header.split(",");
+                for(var i = 0; i < modules.length; i++) {
+                    self.add_module(modules[i]);
+                }
             }
-            //!!!***dummy data
-            // self.vue.rooms[new_room._idx].data[0] = scatterdataset; //test
-            // self.vue.rooms[new_room._idx].data[1] = asline_data1;
-            // self.vue.rooms[new_room._idx].data[2] = asline_data2;
-            self.vue.rooms[new_room._idx].data[3] = [40, 50, 80];
+            // if (self.vue.isInitialized) {
+            //     self.manage_btn_toggle(self.vue.rooms.length - 1); //set this to active (jump to this page)
+            // }
+            // self.vue.rooms[new_room._idx].data[3] = [40, 50, 80];
             enumerate(self.vue.rooms);
-        }
-
+            // setTimeout(function() {
+            //     self.reload_room(new_room._idx);
+            // }, 2);
+        };
         if (self.vue.isInitialized) {
             // Add to server if is init
+            icon_path = icon_path.split("/"); //to store format
             $.post(add_room_url,
-            {
-                'rooms': self.vue.room_structure.rooms.push(name),
-            },  function (data) {
-                    console.log('add room success');
-                    add_room_action();
-                    setTimeout(function() {
-                        self.reload_room(new_room._idx);
-                    }, 2);
-                }
+                {
+                    'room_name': name.toLowerCase(),
+                    'icon_path': "/"+icon_path[icon_path.length-1],
+                    // 'device': '',
+                    // 'mod_header': 'activity,devices,graph,consumption,notification',
+                    'user_id': self.vue.user_id,
+                },  function (data) {
+                        console.log('add room success');
+                        add_room_action();
+                    }
             ).fail(
                 function(response) {
                     alert('Error: ' + response.responseText);
@@ -308,9 +551,7 @@ var app = function() {
         } else {
             add_room_action();
         }
-
         enumerate(self.vue.rooms); //just for check
-
         // re-initialize ( clear modal )
         self.modal_reinit();
     };
@@ -321,7 +562,7 @@ var app = function() {
             console.log('here');
             self.reload_room(i);
         }
-    }
+    };
 
     self.reload_room = function(room_i) {
         var room = self.vue.rooms[room_i];
@@ -329,29 +570,34 @@ var app = function() {
         for (var i = 0; i < room.modules.length; i++) {
             self.reload_mod(room_i, i);
         }
-    }
+    };
 
     self.reload_mod = function(room_i, mod_i) {
         var mod = self.vue.rooms[room_i].modules[mod_i];
-        console.log('Reloading Mod ' + mod.header);
+        console.log('   reloading Mod ' + mod.header);
         if (mod.chart != "") {
+            // mod.chart.redraw();
             mod.chart.destroy();
-        } else if (mod.header == "devices") {
+            self.create_chart(room_i, mod_i);
+        } else if (mod.header == "devices" || mod.header == "notification") {
             $('#' + mod.el_id).empty();
+            self.create_chart(room_i, mod_i);
+        } else {
+            self.create_chart(room_i, mod_i);
         }
-        self.create_chart(room_i, mod_i);
-        console.log('----DONE');
-    }
+        console.log('   ----DONE');
+    };
 
     self.create_chart = function(room_i, mod_i) {
         var mod = self.vue.rooms[room_i].modules[mod_i];
+        var cost= self.vue.device_cost;
         if (room_i == 0) { //Home condition
             if (mod.header == "activity") {
                 areaspline(self.vue.rooms, room_i, mod_i);
             } else if (mod.header == "devices") {
+                $('#'+mod.el_id).empty();
                 htmltag = gen_dev_list(room_i);
-                tmp = self.vue.rooms[room_i].modules[mod_i];
-                $('#'+tmp.el_id).append("\
+                $('#'+mod.el_id).append("\
                     <div class=\"device-list\">\
                     <div class=\"list-group\">"
                     + htmltag +
@@ -360,11 +606,16 @@ var app = function() {
                 ");
                 // gauge(self.vue.rooms[room_i], mod_i, 3);
             } else if (mod.header == "graph") {
-                bar(self.vue.rooms[room_i], mod_i, 3);
+                bar(self.vue.rooms, room_i, mod_i, cost);
             } else if (mod.header == "consumption") {
-                gauge(self.vue.rooms[room_i], mod_i, 3);
+                // bar(self.vue.rooms, room_i, mod_i, cost);
+                // if(self.vue.isInitialized){
+                    gauge(self.vue.rooms, room_i, mod_i, cost, self.vue.isInitialized);
+                // }
             } else if (mod.header == "notification") {
-                gauge(self.vue.rooms[room_i], mod_i, 3);
+                $('#'+mod.el_id).empty();
+                var htmltag = gen_noti_list(room_i);
+                $('#'+mod.el_id).append("<div class=\"notification\"> " + htmltag + "</div>");
             } else {
                 console.log("create_chart() error: " + mod.header);
             }
@@ -373,8 +624,7 @@ var app = function() {
                 areaspline(self.vue.rooms, room_i, mod_i);
             } else if (mod.header == "devices") {
                 htmltag = gen_dev_list(room_i);
-                tmp = self.vue.rooms[room_i].modules[mod_i];
-                $('#'+tmp.el_id).append("\
+                $('#'+mod.el_id).append("\
                     <div class=\"device-list\">\
                     <div class=\"list-group\">"
                     + htmltag +
@@ -382,16 +632,27 @@ var app = function() {
                     </div>\
                 ");
             } else if (mod.header == "graph") {
-                bar(self.vue.rooms[room_i], mod_i, 3);
+                bar(self.vue.rooms, room_i, mod_i, cost);
             } else if (mod.header == "consumption") {
-                gauge(self.vue.rooms[room_i], mod_i, 3); // 3 to be changes
+                gauge(self.vue.rooms, room_i, mod_i, cost, self.vue.isInitialized);
+                // bar(self.vue.rooms, room_i, mod_i, cost);
+                // gauge(self.vue.rooms, room_i, mod_i, cost); // 3 to be changes
             } else if (mod.header == "notification") {
-                areaspline(self.vue.rooms, room_i, mod_i);
+                $('#'+mod.el_id).empty();
+                // htmltag = '<div class="media">';
+                // htmltag +='<div class="media-left">';
+                // htmltag +='<img src="'+ img_path+ '/ipad.png" class="media-object" style="width:60px">';
+                // htmltag +='</div>';
+                // htmltag +='<div class="media-body">';
+                // htmltag +='<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>';
+                // htmltag +='</div></div>';
+                var htmltag = gen_noti_list(room_i);
+                $('#'+mod.el_id).append("<div class=\"notification\"> " + htmltag + "</div>");
             } else {
                 console.log("create_chart() error: " + mod.header);
             }
         }
-    }
+    };
 
 
     var gen_dev_list = function (room_i) {
@@ -410,18 +671,106 @@ var app = function() {
         }
         htmltag += '<div class="btn-wrap"><button class="btn btn-warning addbtn">add device</button></div>';
         return htmltag;
-    }
+    };
 
-    self.add_module = function(type, header) {
+    var gen_noti_list = function (room_i) {
+        // var room = self.vue.rooms[room_i];
+        // room_data = ['ipad', 'tv', 'light', 'ac'];   //new, change in future
+        // if(room_i == 0){
+        //     while (i < room.length){
+        //         // var room_name = room.name;
+        //         htmltag += '<div class="media">';
+        //         htmltag +='<div class="media-left">';
+        //         htmltag +='<img src="'+ img_path+ '/'+room.name+ '.png" class="media-object" style="width:60px">';
+        //         htmltag +='</div>';
+        //         htmltag +='<div class="media-body">';
+        //         htmltag +='<p>' + room.name.capitalize() + ' is spending $'+ String(Math.round(Math.random()*100)) + 'more this month </p>';
+        //         htmltag +='</div></div>';
+        //         i+=1;
+        //     }
+        // }
+        var htmltag = '';
+        if(self.vue.isInitialized) {
+            if (room_i == 0) {
+                // var room = self.vue.rooms[room_i];
+                var i = 0;
+                while (i < self.vue.rooms.length) {
+                    var room = self.vue.rooms[i];
+                    // var room_name = room.name;
+                    htmltag += '<div class="media">';
+                    htmltag += '<div class="media-left">';
+                    htmltag += '<img src="' + img_path + '/' + room.name + '.png" class="media-object" style="width:60px">';
+                    htmltag += '</div>';
+                    htmltag += '<div class="media-body">';
+                    htmltag += '<p>' + room.name.capitalize() + ' is spending $' + String(Math.round(Math.random() * 100)) + ' more last month </p>';
+                    htmltag += '</div></div>';
+                    i += 1;
+                }
+            } else {
+                var device_list = self.vue.room_structure.rooms[room_i].device.split(",");
+                var i = 0;
+                while (i < device_list.length) {
+                    var device_name = device_list[i];
+                    htmltag += '<div class="media">';
+                    htmltag += '<div class="media-left">';
+                    htmltag += '<img src="' + img_path + '/' + device_name + '.png" class="media-object" style="width:60px">';
+                    htmltag += '</div>';
+                    htmltag += '<div class="media-body">';
+                    htmltag += '<p>' + device_name.capitalize() + ' has been on for ' + String(Math.round(Math.random() * 10)) + '</p>';
+                    htmltag += '</div></div>';
+                    i += 1;
+                }
+            }
+        }else{
+            return;
+        }
+
+        // var htmltag = '';
+        // for(i=0; i < room_data.length; i++){
+        // var i = 0;
+        // while (i < device_list.length){
+        //     var device_name = device_list[i];
+        //     htmltag += '<div class="media">';
+        //     htmltag +='<div class="media-left">';
+        //     htmltag +='<img src="'+ img_path+ '/'+device_name+ '.png" class="media-object" style="width:60px">';
+        //     htmltag +='</div>';
+        //     htmltag +='<div class="media-body">';
+        //     htmltag +='<p>' + device_name.capitalize() + ' has been on for '+ String(Math.round(Math.random()*10)) + '</p>';
+        //     htmltag +='</div></div>';
+        //     i+=1;
+        // }
+        return htmltag;
+    };
+
+
+    self.add_module = function(header) {
+        if(self.vue.action_room == 0)
+        {
+            $('#flash-message').flash_message({
+                    text: 'Home does not support modification',
+                    how: 'append',
+                });
+                // $("html, body").animate({ scrollTop: 0}, 200);
+                return;
+        }
         // console.log('add_module');
         var room = self.vue.rooms[self.vue.action_room];
         var id_name = room.name.replace(/ /g, "_") + "_";
         var modType = 'module1'; //default
-        if (type == 2) {
-            modType = 'module2';
-        } else if (type == 3) {
+        if (header == "activity") {
+            modType = 'module1';
+        } else if (header == "devices") {
             modType = 'module3';
+        } else if (header == "graph") {
+            modType = 'module1';
+        } else if (header == "consumption") {
+            modType = 'module3';
+        } else if (header == "notification") {
+            modType = 'module2';
+        } else {
+            console.log("add_module() error: " + header);
         }
+
         var id = new_id();
         var new_module = {
             'header': header,
@@ -432,27 +781,45 @@ var app = function() {
             'chart': "",
         };
         room.modules.push(new_module);
+        enumerate(room.modules);
         if (self.vue.isInitialized) {
+            // Add to server if is init
+            $.post(add_mod_url,
+                {
+                    'room_name': room.name.toLowerCase(),
+                    'mod_header': self.vue.room_structure.rooms[self.vue.action_room].mod_header+","+header,
+                    'user_id': self.vue.user_id,
+                }, function (data) {
+                    console.log('add mod success');
+                    self.vue.room_structure = data;
+                }
+            ).fail(
+                function (response) {
+                    alert('Error: Server did not add successfully.');
+                    self.del_module(self.vue.action_room, room.modules[room.modules.length-1]);
+                }
+            );
             setTimeout(function() {
                 self.create_chart(self.vue.action_room, new_module._idx);
                 $("html, body").animate({ scrollTop: $(document).height() }, 1000);
-            }, 100);
+            }, 5);
         }
         enumerate(room.modules);
-    }
+    };
 
     self.modal_choose_icon = function(path) {
         console.log('modal_choose_icon');
         self.vue.modal_chosen_icon_path = path;
         $('#modal-input').focus();
-    }
+    };
 
     self.del_room = function(_idx) {
         console.log('in del_room');
         if (_idx == 0) { //cannot delete room
             console.log('Cannot delete Home');
+            return;
         } else if (_idx == self.vue.action_room) { //currently using that room
-            console.log('del1 for ' + self.vue.rooms[_idx].name);
+            console.log('del-1 for ' + self.vue.rooms[_idx].name);
             // for (i = 0; i < self.vue.rooms[_idx].modules.length; i++) {
             //     console.log("room: " + _idx + ", mod: " + i);
             //     $("#" + self.vue.rooms[_idx].modules[i].id).empty();
@@ -462,7 +829,7 @@ var app = function() {
             // jump to home   
             self.manage_btn_toggle(0);
         } else {
-            console.log('del2 for ' + self.vue.rooms[_idx].name);
+            console.log('del-2 for ' + self.vue.rooms[_idx].name);
             // for (i = 0; i < self.vue.rooms[_idx].modules.length; i++) {
             //     console.log("room: " + _idx + ", mod: " + i);
             //     $("#" + self.vue.rooms[_idx].modules[i].id).empty();
@@ -479,48 +846,75 @@ var app = function() {
 
 
     self.del_module = function(r_idx, mod) {
+        if(r_idx == 0)
+        {
+            $('#flash-message').flash_message({
+                    text: 'Home does not support modification',
+                    how: 'append',
+                });
+                // $("html, body").animate({ scrollTop: 0}, 200);
+                return;
+        }
         console.log('del_module : ' + self.vue.rooms[r_idx].name + "-" + mod.header);
         var wrap = $("#" + mod.id);
         var mod_element = $("#" + mod.el_id);
-        $.when(wrap.fadeOut(200)).done(function() {
-            $.when(wrap.css('display', '')).done(
-                function() {
-                    // console.log('here');
-                    // remove_svg("#" + mod.el_id + "svg");
-                    var room = self.vue.rooms[r_idx];
-                    // if (mod.header == 'Activity' || mod.header == 'Devices') {
-                    // remove_el("#" + "highcharts-0");
-                    // $("#" + "highcharts-0").children().unwrap();
-                    // mod.chart.destroy();
-                    // }
-                    // console.log(room.modules.splice(mod._idx, 1));
-                    // setTimeout(function() {
-                    //     console.log(room.modules.splice(mod._idx, 1));
-                    // }, 500);
-                    // self.reload_room(r_idx);
-                    room.modules.splice(mod._idx, 1);
-                    enumerate(self.vue.rooms[r_idx].modules);
-                    setTimeout(function() {
-                        console.log('reloading');
-                        self.reload_room(r_idx);
-                    }, 5);
-                });
-        });
-        // console.log('here');
-        // remove_svg("#" + mod.el_id + "svg");
-        // var room = self.vue.rooms[r_idx];
-        // if (mod.header == 'Activity' || mod.header == 'Devices') {
-        // remove_el("#" + "highcharts-0");
-        // $("#" + "highcharts-0").children().unwrap();
-        // mod.chart.destroy();
-        // }
-        // mod_element.empty();
-        // console.log(room.modules.splice(mod._idx, 1));
-        // setTimeout(function() {
-        // console.log(room.modules.splice(mod._idx, 1));
-        // }, 500);
-
-        // enumerate(self.vue.rooms[r_idx].modules);
+        var room = self.vue.rooms[r_idx];
+        if (self.vue.isInitialized) {
+            // Add to server if is init
+            var mod_list= self.vue.room_structure.rooms[self.vue.action_room].mod_header.split(',');
+            console.log("mod to be delete : " + String(mod._idx));
+            mod_list.splice(mod._idx, 1);
+            var mod_header = mod_list.join();
+            console.log(mod_header);
+            $.post(add_mod_url,
+                {
+                    'room_name': room.name.toLowerCase(),
+                    'mod_header': mod_header,
+                    'user_id': self.vue.user_id,
+                }, function (data) {
+                    console.log('del mod success');
+                    self.vue.room_structure = data;
+                    $.when(wrap.fadeOut(200)).done(function() {
+                        $.when(wrap.css('display', '')).done(
+                            function() {
+                            // console.log('here');
+                            // remove_svg("#" + mod.el_id + "svg");
+                            // var room = self.vue.rooms[r_idx];
+                            room.modules.splice(mod._idx, 1);
+                            enumerate(self.vue.rooms[r_idx].modules);
+                            setTimeout(function() {
+                                console.log('reloading');
+                                self.reload_room(r_idx);
+                            }, 5);
+                        });
+                    });
+                }
+            ).fail(
+                function (response) {
+                    alert('Error: Server did not delete successfully.');
+                    // self.del_module(self.vue.action_room, room.modules[room.modules.length-1]);
+                }
+            );
+            // setTimeout(function() {
+            //     self.create_chart(self.vue.action_room, new_module._idx);
+            //     $("html, body").animate({ scrollTop: $(document).height() }, 1000);
+            // }, 5);
+        }
+        // $.when(wrap.fadeOut(200)).done(function() {
+        //     $.when(wrap.css('display', '')).done(
+        //         function() {
+        //             // console.log('here');
+        //             // remove_svg("#" + mod.el_id + "svg");
+        //             var room = self.vue.rooms[r_idx];
+        //             room.modules.splice(mod._idx, 1);
+        //             enumerate(self.vue.rooms[r_idx].modules);
+        //             setTimeout(function() {
+        //                 console.log('reloading');
+        //                 self.reload_room(r_idx);
+        //             }, 5);
+        //         });
+        // });
+        enumerate(self.vue.rooms[r_idx].modules);
     };
 
 
@@ -548,7 +942,7 @@ var app = function() {
         if (self.vue.isInitialized) {
             setTimeout(function() {
                 self.reload_room(_idx);
-            }, 1);
+            }, 100);
         }
     };
 
@@ -655,17 +1049,19 @@ var app = function() {
                     'el_id': 'Home_el_0', //for plot use( the inner el box )
                     'id': 'Home_0', // this should be computed and assigned at the insertion
                     'chart': '',
-                }, {
-                    'header': 'devices',
-                    '_idx': 1,
-                    'modType': 'module3',
-                    'el_id': 'Home_el_1',
-                    'id': 'Home_1',
-                    'chart': '',
-                }, {
+                },
+                //     {
+                //     'header': 'devices',
+                //     '_idx': 1,
+                //     'modType': 'module3',
+                //     'el_id': 'Home_el_1',
+                //     'id': 'Home_1',
+                //     'chart': '',
+                // },
+                    {
                     'header': 'graph',
                     '_idx': 2,
-                    'modType': 'module2',
+                    'modType': 'module1',
                     'el_id': 'Home_el_2',
                     'id': 'Home_2',
                     'chart': '',
@@ -704,6 +1100,7 @@ var app = function() {
             isInitialized: false,
             start_date: moment().subtract(7, 'days').format('YYYY,M,D'),
             end_date: moment().format('YYYY,M,D'),
+            device_cost: [],
         },
         methods: {
             manage_btn_toggle: self.manage_btn_toggle,
@@ -747,7 +1144,7 @@ var app = function() {
     // self.vue.rooms[0].data[0] = scatterdataset; //test
     // self.vue.rooms[0].data[1] = asline_data1;
     // self.vue.rooms[0].data[2] = asline_data2;
-    self.vue.rooms[0].data[3] = [40, 50, 80];
+    // self.vue.rooms[0].data[3] = [40, 50, 80];
 
     // areaspline(self.vue.rooms, 0, 0);
     // gauge(self.vue.rooms[0], 1, 3);
@@ -763,7 +1160,7 @@ var app = function() {
 
     date_picker();
     initHome();
-    initRooms();
+    // initRooms();
 
     //when not isInitialized, don't add graph when add default room above,
     // (manage_btn_toggle will trigger add graph event).

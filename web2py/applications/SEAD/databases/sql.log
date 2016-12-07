@@ -1,0 +1,298 @@
+timestamp: 2016-12-06T20:01:07.654925
+CREATE TABLE web2py_session_SEAD(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    locked CHAR(1),
+    client_ip CHAR(64),
+    created_datetime TIMESTAMP,
+    modified_datetime TIMESTAMP,
+    unique_key CHAR(64),
+    session_data BLOB
+);
+success!
+timestamp: 2016-12-06T20:01:07.721113
+CREATE TABLE auth_user(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    first_name CHAR(128),
+    last_name CHAR(128),
+    email CHAR(512),
+    password CHAR(512),
+    registration_key CHAR(512),
+    reset_password_key CHAR(512),
+    registration_id CHAR(512)
+);
+success!
+timestamp: 2016-12-06T20:01:07.725035
+CREATE TABLE auth_group(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    role CHAR(512),
+    description TEXT
+);
+success!
+timestamp: 2016-12-06T20:01:07.731763
+CREATE TABLE auth_membership(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER REFERENCES auth_user (id) ON DELETE CASCADE  ,
+    group_id INTEGER REFERENCES auth_group (id) ON DELETE CASCADE  
+);
+success!
+timestamp: 2016-12-06T20:01:07.737473
+CREATE TABLE auth_permission(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    group_id INTEGER REFERENCES auth_group (id) ON DELETE CASCADE  ,
+    name CHAR(512),
+    table_name CHAR(512),
+    record_id INTEGER
+);
+success!
+timestamp: 2016-12-06T20:01:07.741514
+CREATE TABLE auth_event(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    time_stamp TIMESTAMP,
+    client_ip CHAR(512),
+    user_id INTEGER REFERENCES auth_user (id) ON DELETE CASCADE  ,
+    origin CHAR(512),
+    description TEXT
+);
+success!
+timestamp: 2016-12-06T20:01:07.746563
+CREATE TABLE auth_cas(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER REFERENCES auth_user (id) ON DELETE CASCADE  ,
+    created_on TIMESTAMP,
+    service CHAR(512),
+    ticket CHAR(512),
+    renew CHAR(1)
+);
+success!
+timestamp: 2016-12-06T20:01:07.759010
+CREATE TABLE user_info(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    rooms TEXT,
+    user_id INTEGER,
+    name TEXT,
+    email TEXT
+);
+success!
+DELETE FROM user_info;
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+timestamp: 2016-12-06T20:01:07.764466
+CREATE TABLE device_usage(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    use_time TIMESTAMP,
+    room TEXT,
+    device TEXT,
+    on_off INTEGER
+);
+success!
+timestamp: 2016-12-06T20:01:07.769318
+CREATE TABLE daily_usage(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    use_day TIMESTAMP,
+    room TEXT,
+    device TEXT,
+    total_usage INTEGER
+);
+success!
+timestamp: 2016-12-06T20:01:07.772900
+CREATE TABLE energy_cost(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    device TEXT,
+    cost_per_h INTEGER
+);
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM user_info;
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM user_info;
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM user_info;
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM user_info;
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM user_info;
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM user_info;
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM user_info;
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM user_info;
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM user_info;
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM user_info;
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM user_info;
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM user_info;
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM user_info;
+DELETE FROM sqlite_sequence WHERE name='user_info';
+DELETE FROM user_info;
+success!
+DELETE FROM user_info;
+DELETE FROM user_info;
+DELETE FROM user_info;
+DELETE FROM energy_cost;
+DELETE FROM user_info;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM user_info;
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM user_info;
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM user_info;
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM user_info;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM user_info;
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM user_info;
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM user_info;
+DELETE FROM user_info;
+DELETE FROM user_info;
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM user_info;
+DELETE FROM energy_cost;
+DELETE FROM user_info;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM user_info;
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM user_info;
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+DELETE FROM user_info;
+success!
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!
+DELETE FROM sqlite_sequence WHERE name='user_info';
+success!
+DELETE FROM energy_cost;
+DELETE FROM sqlite_sequence WHERE name='energy_cost';
+success!

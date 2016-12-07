@@ -6,20 +6,23 @@
 <link rel="stylesheet" type="text/css" href="{{=URL('static','css/d3tree.css')}}" />
 <link rel="stylesheet" type="text/css" href="{{=URL('static','css/bar-chart.css')}}" />
 <link href="https://fonts.googleapis.com/css?family=Josefin+Sans" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Roboto+Condensed:300" rel="stylesheet">
 <!-- For Areaspline -->
 <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"> -->
 <script>
 var img_path = "{{=URL('static','images')}}";
 var get_data_url = "{{=URL('api', 'get_data')}}";
-var get_room_url = "{{=URL('api', 'get_room')}}";
+var get_room_cost_url = "{{=URL('api', 'get_room_cost')}}";
 var add_room_url = "{{=URL('api', 'add_room')}}";
+var add_mod_url = "{{=URL('api', 'add_mod')}}";
+//var get_cost_per_h_url = "{{=URL('api', 'get_cost_per_h')}}";
 var test_url = "{{=URL('api', 'test')}}";
 </script>
 {{end}} {{extend 'layout.html'}}
 <div id="vue-div" style="display: hidden;">
     <div id="manage-bar" class="manage-bar navbar navbar-fixed-left">
         <div id="sead-logo" class="">
-            <button v-on:click.prevent="test(2);">test</button>
+            <!--<button v-on:click.prevent="test(2);">test</button>-->
             <img src="/SEAD/static/images/logo.jpg" class="logo">
         </div>
         <!-- change according to #manage-list -->
@@ -28,6 +31,7 @@ var test_url = "{{=URL('api', 'test')}}";
             <div>
                 <div id="room-label" class="room-label"> ${rooms[action_room].name} </div>
             </div>
+            <div id="room-label-flash" class=""></div>
         </div>
         <div id="manage-list" class="list-group manage-list">
             <!-- use v-for here -->
@@ -36,6 +40,7 @@ var test_url = "{{=URL('api', 'test')}}";
                 <!-- Trigger the modal with a button -->
                 <i class="fa fa-plus-square-o icon" v-on:click.prevent="adding_editing_room('add');" href="" type="button" data-toggle="modal" data-target="#add-room-modal" aria-hidden="true"></i>
                 <i class="fa fa-minus-square-o icon" aria-hidden="true" data-toggle="modal" data-target="#del-room-modal"></i>
+                <i class="fa fa-refresh icon" aria-hidden="true" v-on:click.prevent="test();"></i>
             </div>
         </div>
     </div>
@@ -52,11 +57,11 @@ var test_url = "{{=URL('api', 'test')}}";
                     <i class="fa fa-cog icon" aria-hidden="true" v-on:click.prevent class="dropdown-toggle" data-toggle="dropdown"></i>
                     <ul class="dropdown-menu dropdown-menu-right">
                         <li class="dropdown-header">ADD BOXES</li>
-                        <li><a href="#" v-on:click.prevent="add_module(1,'Activity');">Activity</a></li>
-                        <li><a href="#" v-on:click.prevent="add_module(3,'Devices');">Devices</a></li>
-                        <li><a href="#" v-on:click.prevent="add_module(2,'Device Graph');">Device Graph</a></li>
-                        <li><a href="#" v-on:click.prevent="add_module(2,'Consumption');">Consumption</a></li>
-                        <li><a href="#" v-on:click.prevent="add_module(3,'Notification');">Notification</a></li>
+                        <li><a href="#" v-on:click.prevent="add_module('activity');">Activity</a></li>
+                        <li><a href="#" v-on:click.prevent="add_module('devices');">Devices</a></li>
+                        <li><a href="#" v-on:click.prevent="add_module('graph');">Device Graph</a></li>
+                        <li><a href="#" v-on:click.prevent="add_module('consumption');">Consumption</a></li>
+                        <li><a href="#" v-on:click.prevent="add_module('notification');">Notification</a></li>
                     </ul>
                 </div>
                 <div class="dropdown">
@@ -70,18 +75,17 @@ var test_url = "{{=URL('api', 'test')}}";
                 <div class="dropdown">
                     <i class="fa fa-user icon" aria-hidden="true" v-on:click.prevent class="dropdown-toggle" data-toggle="dropdown"></i>
                     <ul class="dropdown-menu dropdown-menu-right">
-                        <li><a href="#">HTML</a></li>
-                        <li><a href="#">CSS</a></li>
-                        <li><a href="#">JavaScript</a></li>
+                        <li><a>Logout</a></li>
                     </ul>
                 </div>
             </div>
         </div>
         <div id="space-for-search-bar">
-            <div id="reportrange" class="pull-left" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc;">
-                <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>&nbsp;
-                <span></span> <b class="caret"></b>
-            </div>
+        </div>
+        <div id="deco-bar">
+            <div class="bar b1"></div>
+            <div class="bar b2"></div>
+            <div class="bar b3"></div>
         </div>
         <div id="top-manage-bar" class="top-manage-bar">
             <top-manage-item v-for="room in rooms" :room="room" :manage_btn_toggle="manage_btn_toggle" :test="test" :top_manage_bar_toggle="top_manage_bar_toggle"></top-manage-item>
@@ -93,6 +97,13 @@ var test_url = "{{=URL('api', 'test')}}";
                 <a class="add-room-icon" v-on:click.prevent href="">
                     <i class="fa fa-minus-square-o" aria-hidden="true" data-toggle="modal" data-target="#del-room-modal"></i>
                 </a>
+            </div>
+        </div>
+        <div id="flash-message" class="pull-left"></div>
+        <div id="function-bar">
+            <div id="reportrange" class="pull-left" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc;">
+                <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>&nbsp;
+                <span></span> <b class="caret"></b>
             </div>
         </div>
         <div class="module-wrap" v-for="room in rooms" :class="{hidden: !room.isActive}">
@@ -173,14 +184,18 @@ var test_url = "{{=URL('api', 'test')}}";
 <!-- <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script> -->
 <!-- <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script> -->
 <!-- Your D3.js code -->
-<script type="text/javascript" src="{{=URL('static','js/scatterplot2.js')}}"></script>
-<script type="text/javascript" src="{{=URL('static','js/d3tree.js')}}"></script>
+<!--<script type="text/javascript" src="{{=URL('static','js/scatterplot2.js')}}"></script>-->
+<!--<script type="text/javascript" src="{{=URL('static','js/d3tree.js')}}"></script>-->
+<script type="text/javascript" src="{{=URL('static','js/chart_function.js')}}"></script>
 <script type="text/javascript" src="{{=URL('static','js/areaspline.js')}}"></script>
 <script type="text/javascript" src="{{=URL('static','js/gauge.js')}}"></script>
 <script type="text/javascript" src="{{=URL('static','js/bar.js')}}"></script>
+
 <!--Highstock-->
 <script type="text/javascript" src="{{=URL('static','js/highcharts.js')}}"></script>
 <script type="text/javascript" src="{{=URL('static','js/highcharts-more.js')}}"></script>
+
+
 
 <!-- <script src="https://code.highcharts.com/highcharts-more.js"></script> -->
 <script type="text/javascript" src="{{=URL('static','js/solid-gauge.js')}}"></script>

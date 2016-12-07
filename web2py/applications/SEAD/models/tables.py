@@ -18,28 +18,39 @@ end = datetime.datetime(2016, 12, 31, 0, 0)
 num_of_minutes = 2*365*24*60  # datetime.timedelta(minutes=365*24*60*2)
 
 
+
 # Example Room Structure
 demo_user = {
-    'rooms' : {
-        'bedroom' :
-            {
-                'icon_path' : '/bedroom.png',
-                'device' : 'tv,light,desktop,ac',
-                'mod_header' : 'activity,devices,graph,consumption,notification',
-            },
-        'kitchen' :
-            {
-                'icon_path' : '/kitchen.png',
-                'device' : 'freezer,fridge,toaster,microwave,light',
-                'mod_header' : 'activity,devices,graph,consumption,notification',
-            },
-        'office' :
-            {
-                'icon_path' : '/office.png',
-                'device' : 'desktop,light,ipad,shredder',
-                'mod_header' : 'activity,devices,graph,consumption,notification',
-            }
-    }
+    'bedroom' :
+        {
+            'icon_path' : '/bedroom.png',
+            'device' : 'tv,light,desktop,ac',
+            'mod_header' : 'activity,graph,consumption,notification',
+        },
+    'kitchen' :
+        {
+            'icon_path' : '/kitchen.png',
+            'device' : 'freezer,fridge,toaster,microwave,light',
+            'mod_header' : 'activity,graph,consumption,notification',
+        },
+    'office' :
+        {
+            'icon_path' : '/office.png',
+            'device' : 'desktop,light,ipad,shredder',
+            'mod_header' : 'activity,graph,consumption,notification',
+        },
+    'bathroom' :
+        {
+            'icon_path' : '/bathroom.png',
+            'device' : 'light,hairdryer,shaver',
+            'mod_header' : 'activity,graph,consumption,notification'
+        },
+    'livingroom' :
+        {
+            'icon_path' : '/livingroom.png',
+            'device' : 'tv,xbox,soundsystem,light',
+            'mod_header' : 'activity,graph,consumption,notification',
+        },
 }
 
 
@@ -96,6 +107,30 @@ db.define_table('daily_usage',
                 Field('device', 'text'),
                 Field('total_usage', 'integer')
                 )
+
+# $/W
+db.define_table('energy_cost',
+             Field('device', 'text'),
+             Field('cost_per_h', 'integer')
+             )
+db.energy_cost.truncate()
+
+cent_per_kw = 22.7
+db.energy_cost.insert(device='tv', cost_per_h=0.18*cent_per_kw)
+db.energy_cost.insert(device='light', cost_per_h=0.1*cent_per_kw)
+db.energy_cost.insert(device='desktop', cost_per_h=0.35*cent_per_kw)
+db.energy_cost.insert(device='ac', cost_per_h=1*cent_per_kw)
+db.energy_cost.insert(device='freezer', cost_per_h=0.4*cent_per_kw)
+db.energy_cost.insert(device='fridge', cost_per_h=0.2*cent_per_kw)
+db.energy_cost.insert(device='toaster', cost_per_h=0.8*cent_per_kw)
+db.energy_cost.insert(device='microwave', cost_per_h=1*cent_per_kw)
+db.energy_cost.insert(device='ipad', cost_per_h=0.05*cent_per_kw)
+db.energy_cost.insert(device='shredder', cost_per_h=0.04*cent_per_kw)
+db.energy_cost.insert(device='hairdryer', cost_per_h=2*cent_per_kw)
+db.energy_cost.insert(device='xbox', cost_per_h=0.25*cent_per_kw)
+db.energy_cost.insert(device='soundsystem', cost_per_h=0.52*cent_per_kw)
+db.energy_cost.insert(device='shaver', cost_per_h=0.02*cent_per_kw)
+
 
 rooms = {
     'bedroom': {'tv': [30, 4],  #possibility to be on, on for how long

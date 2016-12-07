@@ -1,8 +1,147 @@
-var gauge = function(room, mod_i, data_i) {
-        var today = room.data[data_i][0];
-        var yesterday = room.data[data_i][1];
-        var lastweek = room.data[data_i][2];
+var gauge = function(rooms, room_i, mod_i, cost, isInit) {
+        var house = 40;
+        var room1 = {
+            name: 'loading',
+            data: 50,
+        };
+        var room2 = {
+            name: 'loading',
+            data: 80,
+        };
         // console.log(today);
+
+
+    // 1. all rooms
+    // 2. room to add graph (Home)
+    // 3. module to add graph (0 in Home)
+    //needs to be change here
+
+    //     //Home
+    // var room = rooms[room_i];
+    // var data_series = [];
+    // var time_period = [];
+
+    //Home
+    var room = rooms[room_i];
+    var data_series = [];
+    var time_period = [];
+    var arr_to_be_sum = [];
+    var cost_per_h = 0;
+    // var ratio = 50/rooms.length-1;
+    var home_sum = 0;
+    var sum_list = [];
+
+    // console.log('Room:');
+    // console.log(room_i);
+    if (room_i == 0){
+        console.log('   Gauge for Home');
+        // console.log(rooms.length);
+        for (var i = 1; i < rooms.length; i++){
+            // console.log('in loop');
+            room = rooms[i];   //not the Home, but other rooms
+            arr_to_be_sum = [];
+            for (var j = 0; j < room.data.length; j++){
+                for (var k = 0; k < cost.length; k++){
+                    if(cost[k].device == room.data[j].device){
+                        cost_per_h = cost[k].cost_per_h;
+                        break;
+                    }
+                }
+                // time_period = room.data[j].time; //.filter(function(n){ return n != undefined })
+                arr_to_be_sum.push(room.data[j].data.map(function (x) {
+                    return Math.round(x/60 * cost_per_h);
+                }));
+            }
+            var sum_per_day = sumArrayElements(arr_to_be_sum);
+            var sum = sum_per_day.reduce(function (a,b) {
+                    return a+b;
+                });
+            sum_list.push({
+                data: sum,
+                name: room.name,
+            });
+            home_sum += sum;
+            // console.log('before push');
+            // console.log(sum);
+            // data_series.push({
+            //     name: room.name,
+            //     data: [{
+            //             color: Highcharts.getOptions().colors[i],
+            //             radius: String((100-ratio*i)) + '%',
+            //             innerRadius: String((100-ratio*i)) + '%',
+            //             y: sum
+            //         }]
+            // });
+        }
+        // data_series.unshift({
+        //         name: 'Home',
+        //         data: [{
+        //                 color: Highcharts.getOptions().colors[0],
+        //                 radius: '100%',
+        //                 innerRadius: '100%',
+        //                 y: home_sum
+        //             }]
+        //     });
+        // console.log('home_sum:');
+        // console.log(home_sum);
+        // console.log(data_series);
+        house = home_sum/100;
+
+        sum_list.sort(function (a,b) {
+            // console.log('   sorting data_series');
+            return b.data - a.data;
+        });
+        if(isInit){
+            room1 = sum_list[0];
+            room2 = sum_list[1];
+        }
+    }
+    else {
+        // return;
+        console.log('   Gauge for '+room.name);
+        for (var i = 0; i < room.data.length; i++){
+            // time_period = room.data[i].time;
+            for (var k = 0; k < cost.length; k++){
+                if(cost[k].device == room.data[i].device){
+                    cost_per_h = cost[k].cost_per_h;
+                    // console.log(cost[k].device + " : " + String(cost_per_h));
+                    break;
+                }
+            }
+            // data_series.push({
+            //     name: room.data[i].device.capitalize(),
+            //     data: room.data[i].data.map(function (x) {
+            //         return Math.round(x/60 * cost_per_h);
+            //     }),
+            // });
+            arr_to_be_sum.push(room.data[i].data.map(function (x) {
+                    return Math.round(x/60 * cost_per_h);
+                }));
+            var sum_per_day = sumArrayElements(arr_to_be_sum);
+            var sum = sum_per_day.reduce(function (a,b) {
+                    return a+b;
+                });
+            sum_list.push({
+                data: sum,
+                name: room.data[i].device.capitalize(),
+            });
+            home_sum += sum;
+        }
+        house = home_sum/100;
+
+        sum_list.sort(function (a,b) {
+            // console.log('   sorting data_series');
+            return b.data - a.data;
+        });
+        if(isInit){
+            room1 = sum_list[0];
+            room2 = sum_list[1];
+        }
+    }
+    room = rooms[room_i];
+
+
+
 
         room.modules[mod_i].chart = Highcharts.chart(room.modules[mod_i].el_id , {
         // $("#" + room.modules[mod_i].el_id).highcharts({
@@ -59,7 +198,7 @@ var gauge = function(room, mod_i, data_i) {
 
                 yAxis: {
                     min: 0,
-                    max: 100,
+                    max: home_sum/100,
                     lineWidth: 0,
                     tickPositions: []
                 },
@@ -75,32 +214,33 @@ var gauge = function(room, mod_i, data_i) {
                     }
                 },
 
-                series: [{
-                    name: 'Today',
+                series:
+                    [{
+                    name: 'Total',
                     borderColor: Highcharts.getOptions().colors[3],
                     data: [{
                         color: Highcharts.getOptions().colors[3],
                         radius: '100%',
                         innerRadius: '100%',
-                        y: today
+                        y: house
                     }]
                 }, {
-                    name: 'Yesterday',
+                    name: room1.name,
                     borderColor: Highcharts.getOptions().colors[0],
                     data: [{
                         color: Highcharts.getOptions().colors[0],
                         radius: '75%',
                         innerRadius: '75%',
-                        y: yesterday
+                        y: room1.data/100
                     }]
                 }, {
-                    name: 'Last Week',
+                    name: room2.name,
                     borderColor: Highcharts.getOptions().colors[2],
                     data: [{
                         color: Highcharts.getOptions().colors[2],
                         radius: '50%',
                         innerRadius: '50%',
-                        y: lastweek
+                        y: room2.data/100
                     }]
                 }]
             },

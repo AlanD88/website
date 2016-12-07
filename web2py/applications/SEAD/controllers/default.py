@@ -17,25 +17,23 @@ def index():
     if you need a simple wiki simply replace the two lines below with:
     return auth.wiki()
     """
-    redirect(URL('default', 'dashboard'))
+    redirect(URL('default', 'landing_page'))
     return dict(message=T('Welcome to web2py!'))
-
-
-def dashboard():
-    return dict()
-
 
 def landing_page():
     return dict()
 
-
 def fbLogInAPI():
     return dict()
 
+def fbLogInCode():
+    return dict()
 
 def googleLogInCode():
     return dict()
 
+def dashboard():
+    return dict()
 
 def user():
     """
@@ -53,6 +51,9 @@ def user():
     to decorate functions that need access control
     also notice there is http://..../[app]/appadmin/manage/auth to allow administrator to manage users
     """
+    if auth.user_id is not None:
+        redirect(URL('default', 'dashboard'))
+
     return dict(form=auth())
 
 

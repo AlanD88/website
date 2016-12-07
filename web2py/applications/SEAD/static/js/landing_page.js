@@ -11,7 +11,7 @@ $(document).ready(function() {
 
             //Scroll Position detection function
             var options = [
-                {selector: '#PF_row_one', offset: 1200, callback: function() {
+                {selector: '#PF_row_one', offset: 200, callback: function() {
                     $('#PF_row_one').addClass('animated fadeInUp');
                     //fade_first_div();
                 } },
